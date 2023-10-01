@@ -210,6 +210,16 @@ const CongratulationsPage: FunctionComponent = observer(() => {
                     svr_error_mssg: data?.data,
                 });
             } else {
+                const prevInfo = UserInfoStore?.user_info;
+                UserInfoStore.set_user_info({
+                    user_info: {
+                        ...prevInfo,
+                        payment:
+                            (prevInfo?.payment || 0) +
+                            (route.params?.noOfLessons || 0),
+                    },
+                });
+
                 navigation.dispatch(
                     CommonActions.reset({
                         index: 0,

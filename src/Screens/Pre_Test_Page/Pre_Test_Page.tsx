@@ -753,9 +753,15 @@ const PreTestPage: FunctionComponent = observer(() => {
     useEffect(() => {
         if (stage === 'Proficiency') {
             if (currentQuestion >= (noOfQuestions || 1)) {
-                const score = allAnswers?.filter(item => item === 1)?.length;
+                const score =
+                    (allAnswers?.filter(item => item === 1)?.length /
+                        allAnswers?.length) *
+                    100;
 
-                if (assignedLevel === 'Beginner' && score >= 7) {
+                if (
+                    assignedLevel === 'Beginner' &&
+                    score >= global_variables.PreIntermediatePreTestPass
+                ) {
                     setPQuestions(
                         proficiencyT.filter(item => item.englishLevel === 'B1'),
                     );
@@ -763,7 +769,10 @@ const PreTestPage: FunctionComponent = observer(() => {
                     setPAnswers([]);
                     setCurrentQuestion(0);
                     setAssignedLevel('Pre-Intermediate');
-                } else if (assignedLevel === 'Pre-Intermediate' && score >= 7) {
+                } else if (
+                    assignedLevel === 'Pre-Intermediate' &&
+                    score >= global_variables.IntermediatePreTestPass
+                ) {
                     setPQuestions(
                         proficiencyT.filter(item => item.englishLevel === 'B2'),
                     );
@@ -771,7 +780,10 @@ const PreTestPage: FunctionComponent = observer(() => {
                     setPAnswers([]);
                     setCurrentQuestion(0);
                     setAssignedLevel('Intermediate');
-                } else if (assignedLevel === 'Intermediate' && score >= 6) {
+                } else if (
+                    assignedLevel === 'Intermediate' &&
+                    score >= global_variables.UpperIntermediatePreTestPass
+                ) {
                     setPQuestions(
                         proficiencyT.filter(item => item.englishLevel === 'C1'),
                     );
@@ -781,7 +793,7 @@ const PreTestPage: FunctionComponent = observer(() => {
                     setAssignedLevel('Upper-Intermediate');
                 } else if (
                     assignedLevel === 'Upper-Intermediate' &&
-                    score >= 6
+                    score >= global_variables.ConfidentPreTestPass
                 ) {
                     setAssignedLevel('Confident');
                     setLQuestions(

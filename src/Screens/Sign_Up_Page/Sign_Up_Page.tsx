@@ -248,7 +248,7 @@ const SignUpPage: FunctionComponent = observer(() => {
                             ...TempUserInfo,
                             password: data?.data?.password,
                             accessToken: data?.data?.accessToken,
-                            parental_control: data?.data?.pcPIN,
+                            // parental_control: data?.data?.pcPIN,
                         },
                     });
                     setPassword('');
@@ -276,7 +276,7 @@ const SignUpPage: FunctionComponent = observer(() => {
                                 ...TempUserInfo,
                                 password: data?.data?.password,
                                 accessToken: data?.data?.accessToken,
-                                parental_control: data?.data?.pcPIN,
+                                // parental_control: data?.data?.pcPIN,
                             },
                         }),
                         {

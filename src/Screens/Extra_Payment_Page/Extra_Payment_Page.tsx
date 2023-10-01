@@ -22,6 +22,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import {
     plan_upgrade_paypal_intent,
     plan_upgrade_stripe_intent,
+    update_payment_history,
 } from '../../Configs/Queries/Payment/Payment';
 import OverlaySpinner from '../../Components/Overlay_Spinner/Overlay_Spinner';
 import { UserInfoStore } from '../../MobX/User_Info/User_Info';
@@ -56,6 +57,7 @@ const ExtraPaymentPage: FunctionComponent = () => {
     const [subPM, setSubPM] = useState<number>(1);
     const [showSpinner, setShowSpinner] = useState<boolean>(false);
     const [disableButton, setDisableButton] = useState<boolean>(false);
+    const [pHistoryID, setPHistoryID] = useState<string>('');
 
     interface FWRedirectParams {
         status: 'successful' | 'cancelled';
@@ -100,7 +102,8 @@ const ExtraPaymentPage: FunctionComponent = () => {
                         svr_error_mssg: data?.data,
                     });
                 } else {
-                    const client_secret: string = data?.data;
+                    const client_secret: string = data?.data?.cl_secret;
+                    setPHistoryID(data?.data?.p_history?._id);
 
                     const initResponse = await initPaymentSheet({
                         merchantDisplayName: 'Tutor AI, Inc.',
@@ -137,19 +140,62 @@ const ExtraPaymentPage: FunctionComponent = () => {
         },
     );
 
+    const { mutate: update_payment_history_mutate } = useMutation(
+        update_payment_history,
+        {
+            onMutate: () => {
+                setDisableButton(true);
+                setShowSpinner(true);
+            },
+            onSettled: async data => {
+                setShowSpinner(false);
+                setDisableButton(false);
+                if (data?.error) {
+                    error_handler({
+                        navigation: navigation,
+                        error_mssg: 'Something went wrong!',
+                        svr_error_mssg: data?.data,
+                    });
+                } else {
+                    navigation.push(
+                        'HomeStack' as never,
+                        {
+                            screen: 'CongratulationsPage',
+                            params: {
+                                header_txt: 'Payment Successful!',
+                                message_txt:
+                                    "Click on the 'Continue' Button to Proceed!",
+                                nextPage: 8,
+                                hide_back_btn: true,
+                            },
+                        } as never,
+                    );
+                }
+            },
+        },
+    );
+
     const handle_final_payments = () => {
-        navigation.push(
-            'HomeStack' as never,
-            {
-                screen: 'CongratulationsPage',
-                params: {
-                    header_txt: 'Payment Successful!',
-                    message_txt: "Click on the 'Continue' Button to Proceed!",
-                    nextPage: 8,
-                    hide_back_btn: true,
-                },
-            } as never,
-        );
+        if (pHistoryID) {
+            update_payment_history_mutate({
+                userAuth: UserInfoStore?.user_info?.accessToken as string,
+                ph_id: pHistoryID,
+            });
+        } else {
+            navigation.push(
+                'HomeStack' as never,
+                {
+                    screen: 'CongratulationsPage',
+                    params: {
+                        header_txt: 'Payment Successful!',
+                        message_txt:
+                            "Click on the 'Continue' Button to Proceed!",
+                        nextPage: 8,
+                        hide_back_btn: true,
+                    },
+                } as never,
+            );
+        }
     };
 
     const refresh_data = no_double_clicks({
@@ -175,7 +221,8 @@ const ExtraPaymentPage: FunctionComponent = () => {
                         svr_error_mssg: data?.data,
                     });
                 } else {
-                    setPaypalLink(data?.data);
+                    setPaypalLink(data?.data?.cl_secret);
+                    setPHistoryID(data?.data?.p_history?._id);
                     setShowModal(true);
                 }
             },
@@ -401,49 +448,46 @@ const ExtraPaymentPage: FunctionComponent = () => {
                                     />
                                 )}
                         </View>
-                        {(AdminStore.admin_data?.enable_flutterwave || false) &&
-                            amountToPay > 0 && (
-                                <Fragment>
-                                    <BasicText
-                                        inputText="or"
-                                        textAlign="center"
-                                        textWeight={700}
-                                        marginTop={20}
-                                        marginBottom={15}
-                                        textSize={18}
+                        {/* {(AdminStore.admin_data?.enable_flutterwave || false) &&
+                            amountToPay > 0 && ( */}
+                        {false && (
+                            <Fragment>
+                                <BasicText
+                                    inputText="or"
+                                    textAlign="center"
+                                    textWeight={700}
+                                    marginTop={20}
+                                    marginBottom={15}
+                                    textSize={18}
+                                />
+                                <View style={{ marginHorizontal: 22 }}>
+                                    <PayWithFlutterwave
+                                        onRedirect={handleOnRedirect}
+                                        options={{
+                                            tx_ref: generateTransactionRef(10),
+                                            authorization: flutterwaveKey,
+                                            customer: {
+                                                email: UserInfoStore?.user_info
+                                                    ?.email as string,
+                                                name: UserInfoStore?.user_info
+                                                    ?.fullname as string,
+                                                phonenumber: UserInfoStore
+                                                    ?.user_info
+                                                    ?.mobile as string,
+                                            },
+                                            amount: amountToPay,
+                                            currency: 'USD',
+                                            payment_options: 'card',
+                                            customizations: {
+                                                title: 'Tutor AI, Inc.',
+                                                description:
+                                                    'Payment for Study Plan Upgrade (60-minute plan).',
+                                            },
+                                        }}
                                     />
-                                    <View style={{ marginHorizontal: 22 }}>
-                                        <PayWithFlutterwave
-                                            onRedirect={handleOnRedirect}
-                                            options={{
-                                                tx_ref: generateTransactionRef(
-                                                    10,
-                                                ),
-                                                authorization: flutterwaveKey,
-                                                customer: {
-                                                    email: UserInfoStore
-                                                        ?.user_info
-                                                        ?.email as string,
-                                                    name: UserInfoStore
-                                                        ?.user_info
-                                                        ?.fullname as string,
-                                                    phonenumber: UserInfoStore
-                                                        ?.user_info
-                                                        ?.mobile as string,
-                                                },
-                                                amount: amountToPay,
-                                                currency: 'USD',
-                                                payment_options: 'card',
-                                                customizations: {
-                                                    title: 'Tutor AI, Inc.',
-                                                    description:
-                                                        'Payment for Study Plan Upgrade (60-minute plan).',
-                                                },
-                                            }}
-                                        />
-                                    </View>
-                                </Fragment>
-                            )}
+                                </View>
+                            </Fragment>
+                        )}
                     </ScrollView>
                     <View
                         style={{

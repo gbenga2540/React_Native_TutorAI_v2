@@ -412,190 +412,186 @@ const ReportPage: FunctionComponent = observer(() => {
                         />
                     </TouchableOpacity>
                 </View>
-                {(UserInfo?.study_target === 60 || false) && (
-                    <>
-                        <BasicText
-                            inputText="Completed Homeworks"
-                            textSize={20}
-                            marginTop={40}
-                            textWeight={700}
-                        />
-                        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                <>
+                    <BasicText
+                        inputText="Completed Homeworks"
+                        textSize={20}
+                        marginTop={40}
+                        textWeight={700}
+                    />
+                    <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                        <View
+                            style={{
+                                backgroundColor: Colors.Primary,
+                                borderRadius: 10,
+                                padding: 10,
+                                flexDirection: 'row',
+                                height: 100,
+                                flex: 1,
+                            }}>
+                            <Image
+                                source={screen_width_less_than({
+                                    if_false: require('../../Images/Lessons/Lessons.png'),
+                                    if_true: require('../../Images/Lessons/Lessons_Single.png'),
+                                })}
+                                style={{
+                                    width: screen_height_less_than({
+                                        if_false: 155,
+                                        if_true: 80,
+                                    }),
+                                    height: 80,
+                                    alignSelf: 'center',
+                                }}
+                            />
                             <View
                                 style={{
-                                    backgroundColor: Colors.Primary,
-                                    borderRadius: 10,
-                                    padding: 10,
-                                    flexDirection: 'row',
-                                    height: 100,
-                                    flex: 1,
+                                    alignSelf: 'center',
+                                    marginLeft: 'auto',
+                                    marginRight: 5,
                                 }}>
-                                <Image
-                                    source={screen_width_less_than({
-                                        if_false: require('../../Images/Lessons/Lessons.png'),
-                                        if_true: require('../../Images/Lessons/Lessons_Single.png'),
-                                    })}
-                                    style={{
-                                        width: screen_height_less_than({
-                                            if_false: 155,
-                                            if_true: 80,
-                                        }),
-                                        height: 80,
-                                        alignSelf: 'center',
-                                    }}
+                                <BasicText
+                                    inputText={`${
+                                        homework_done()?.total
+                                    } Homework${
+                                        homework_done()?.total === 1 ? '' : 's'
+                                    } Done`}
+                                    textSize={14}
+                                    textWeight={500}
+                                    textColor={Colors.White}
                                 />
-                                <View
-                                    style={{
-                                        alignSelf: 'center',
-                                        marginLeft: 'auto',
-                                        marginRight: 5,
-                                    }}>
-                                    <BasicText
-                                        inputText={`${
-                                            homework_done()?.total
-                                        } Homework${
-                                            homework_done()?.total === 1
-                                                ? ''
-                                                : 's'
-                                        } Done`}
-                                        textSize={14}
-                                        textWeight={500}
-                                        textColor={Colors.White}
-                                    />
-                                    <BasicText
-                                        inputText={`Success Rate: ${
-                                            homework_done()?.average
-                                        }%`}
-                                        textSize={16}
-                                        textWeight={700}
-                                        marginTop={10}
-                                        textColor={Colors.Green2}
-                                    />
-                                </View>
+                                <BasicText
+                                    inputText={`Success Rate: ${
+                                        homework_done()?.average
+                                    }%`}
+                                    textSize={16}
+                                    textWeight={700}
+                                    marginTop={10}
+                                    textColor={Colors.Green2}
+                                />
                             </View>
-                            <TouchableOpacity
-                                onPress={() =>
-                                    no_double_clicks({
-                                        execFunc: () => {
-                                            navigation.push(
-                                                'HomeStack' as never,
-                                                {
-                                                    screen: 'HomeWorkArchivePage',
-                                                } as never,
-                                            );
-                                        },
-                                    })({})
-                                }
-                                activeOpacity={0.5}
-                                style={{
-                                    width: 22,
-                                    height: 50,
-                                    backgroundColor: Colors.Primary,
-                                    marginLeft: 10,
-                                    marginTop: 'auto',
-                                    marginBottom: 'auto',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    borderRadius: 5,
-                                }}>
-                                <Feather
-                                    name="chevron-right"
-                                    color={Colors.White}
-                                    size={23}
-                                />
-                            </TouchableOpacity>
                         </View>
-                        <BasicText
-                            inputText="Completed Exams"
-                            textSize={20}
-                            marginTop={40}
-                            textWeight={700}
-                        />
-                        <View style={{ flexDirection: 'row', marginTop: 10 }}>
-                            <View
-                                style={{
-                                    backgroundColor: Colors.Orange,
-                                    borderRadius: 10,
-                                    padding: 10,
-                                    flexDirection: 'row',
-                                    height: 100,
-                                    flex: 1,
-                                }}>
-                                <Image
-                                    source={screen_width_less_than({
-                                        if_false: require('../../Images/Lessons/Lessons.png'),
-                                        if_true: require('../../Images/Lessons/Lessons_Single.png'),
-                                    })}
-                                    style={{
-                                        width: screen_height_less_than({
-                                            if_false: 155,
-                                            if_true: 80,
-                                        }),
-                                        height: 80,
-                                        alignSelf: 'center',
-                                    }}
-                                />
-                                <View
-                                    style={{
-                                        alignSelf: 'center',
-                                        marginLeft: 'auto',
-                                        marginRight: 5,
-                                    }}>
-                                    <BasicText
-                                        inputText={`${ExamsDone?.length} Exam${
-                                            ExamsDone?.length === 1 ? '' : 's'
-                                        } Done`}
-                                        textSize={14}
-                                        textWeight={500}
-                                        textColor={Colors.White}
-                                    />
-                                    <BasicText
-                                        inputText={`Success Rate: ${calculate_average(
+                        <TouchableOpacity
+                            onPress={() =>
+                                no_double_clicks({
+                                    execFunc: () => {
+                                        navigation.push(
+                                            'HomeStack' as never,
                                             {
-                                                scores_data: ExamsDone || [],
-                                            },
-                                        )}%`}
-                                        textSize={16}
-                                        textWeight={700}
-                                        marginTop={10}
-                                        textColor={Colors.White}
-                                    />
-                                </View>
-                            </View>
-                            <TouchableOpacity
-                                onPress={() =>
-                                    no_double_clicks({
-                                        execFunc: () => {
-                                            navigation.push(
-                                                'HomeStack' as never,
-                                                {
-                                                    screen: 'ExamArchivePage',
-                                                } as never,
-                                            );
-                                        },
-                                    })({})
-                                }
-                                activeOpacity={0.5}
+                                                screen: 'HomeWorkArchivePage',
+                                            } as never,
+                                        );
+                                    },
+                                })({})
+                            }
+                            activeOpacity={0.5}
+                            style={{
+                                width: 22,
+                                height: 50,
+                                backgroundColor: Colors.Primary,
+                                marginLeft: 10,
+                                marginTop: 'auto',
+                                marginBottom: 'auto',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                borderRadius: 5,
+                            }}>
+                            <Feather
+                                name="chevron-right"
+                                color={Colors.White}
+                                size={23}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                    <BasicText
+                        inputText="Completed Exams"
+                        textSize={20}
+                        marginTop={40}
+                        textWeight={700}
+                    />
+                    <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                        <View
+                            style={{
+                                backgroundColor: Colors.Orange,
+                                borderRadius: 10,
+                                padding: 10,
+                                flexDirection: 'row',
+                                height: 100,
+                                flex: 1,
+                            }}>
+                            <Image
+                                source={screen_width_less_than({
+                                    if_false: require('../../Images/Lessons/Lessons.png'),
+                                    if_true: require('../../Images/Lessons/Lessons_Single.png'),
+                                })}
                                 style={{
-                                    width: 22,
-                                    height: 50,
-                                    backgroundColor: Colors.Orange,
-                                    marginLeft: 10,
-                                    marginTop: 'auto',
-                                    marginBottom: 'auto',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    borderRadius: 5,
+                                    width: screen_height_less_than({
+                                        if_false: 155,
+                                        if_true: 80,
+                                    }),
+                                    height: 80,
+                                    alignSelf: 'center',
+                                }}
+                            />
+                            <View
+                                style={{
+                                    alignSelf: 'center',
+                                    marginLeft: 'auto',
+                                    marginRight: 5,
                                 }}>
-                                <Feather
-                                    name="chevron-right"
-                                    color={Colors.White}
-                                    size={23}
+                                <BasicText
+                                    inputText={`${ExamsDone?.length} Exam${
+                                        ExamsDone?.length === 1 ? '' : 's'
+                                    } Done`}
+                                    textSize={14}
+                                    textWeight={500}
+                                    textColor={Colors.White}
                                 />
-                            </TouchableOpacity>
+                                <BasicText
+                                    inputText={`Success Rate: ${calculate_average(
+                                        {
+                                            scores_data: ExamsDone || [],
+                                        },
+                                    )}%`}
+                                    textSize={16}
+                                    textWeight={700}
+                                    marginTop={10}
+                                    textColor={Colors.White}
+                                />
+                            </View>
                         </View>
-                    </>
-                )}
+                        <TouchableOpacity
+                            onPress={() =>
+                                no_double_clicks({
+                                    execFunc: () => {
+                                        navigation.push(
+                                            'HomeStack' as never,
+                                            {
+                                                screen: 'ExamArchivePage',
+                                            } as never,
+                                        );
+                                    },
+                                })({})
+                            }
+                            activeOpacity={0.5}
+                            style={{
+                                width: 22,
+                                height: 50,
+                                backgroundColor: Colors.Orange,
+                                marginLeft: 10,
+                                marginTop: 'auto',
+                                marginBottom: 'auto',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                borderRadius: 5,
+                            }}>
+                            <Feather
+                                name="chevron-right"
+                                color={Colors.White}
+                                size={23}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </>
                 <View style={{ marginBottom: 50 }}>{''}</View>
             </ScrollView>
         </View>

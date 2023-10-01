@@ -47,13 +47,18 @@ import SInfo from 'react-native-sensitive-info';
 import { SECURE_STORAGE_CLESSON_DATA, SECURE_STORAGE_NAME } from '@env';
 import { VocabularyInfoStore } from '../../MobX/Vocabulary_Info/Vocabulary_Info';
 import { AdminStore } from '../../MobX/Admin/Admin';
+import { global_variables } from '../../Configs/Global/Global_Variable';
 
 const LGrammarPage: FunctionComponent = observer(() => {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
     const route = useRoute<RouteProp<any>>();
     const [micText, setMicText] = useState<string>('');
     const IS_SIXTY_MIN = route.params?.is_sixty_min || false;
-    const [timer, setTimer] = useState<number>(960);
+    const [timer, setTimer] = useState<number>(
+        IS_SIXTY_MIN
+            ? global_variables.GrammarTime
+            : global_variables.GrammarTime / 2,
+    );
     const flatListRef = useRef<FlatList<any> | null>(null);
 
     const [resTimer, setResTimer] = useState<number>(60);
@@ -452,7 +457,8 @@ const LGrammarPage: FunctionComponent = observer(() => {
                     />
                 )}
                 <BasicText
-                    inputText={route.params?.topic || ''}
+                    inputText={'Grammar'}
+                    // inputText={route.params?.topic || ''}
                     textWeight={700}
                     textSize={20}
                     marginLeft={timer === 0 ? 15 : 0}

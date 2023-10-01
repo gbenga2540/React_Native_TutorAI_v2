@@ -4,4 +4,12 @@ export const global_variables = {
     writingPassMark: 70,
     examWPassmark: 70,
     examPassMark: 80,
+    GrammarTime: 1860,
+    ReadingTime: 660,
+    WritingTime: 660,
+    ConversationTime: 660,
+    PreIntermediatePreTestPass: 70,
+    IntermediatePreTestPass: 70,
+    UpperIntermediatePreTestPass: 60,
+    ConfidentPreTestPass: 60,
 };

@@ -17,7 +17,7 @@ export const profile_menu_1: INTF_ProfileMenu[] = [
     },
     {
         id: 3,
-        name: 'Schedule Next Class',
+        name: 'Schedule Class',
         stack: 'HomeStack',
         screen: 'ScheduleClassPage',
         params: {},

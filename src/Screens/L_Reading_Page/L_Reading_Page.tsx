@@ -44,12 +44,18 @@ import { AvatarVoiceStore } from '../../MobX/Avatar_Voice/Avatar_Voice';
 import { SpeechControllerStore } from '../../MobX/Speech_Controller/Speech_Controller';
 import { AvatarSpeakStore } from '../../MobX/Avatar_Speak/Avatar_Speak';
 import { AdminStore } from '../../MobX/Admin/Admin';
+import { global_variables } from '../../Configs/Global/Global_Variable';
 
 const LReadingPage: FunctionComponent = observer(() => {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
     const route = useRoute<RouteProp<any>>();
     const [micText, setMicText] = useState<string>('');
-    const [timer, setTimer] = useState<number>(510);
+    const IS_SIXTY_MIN = route.params?.is_sixty_min || false;
+    const [timer, setTimer] = useState<number>(
+        IS_SIXTY_MIN
+            ? global_variables.ReadingTime
+            : global_variables.ReadingTime / 2,
+    );
     const flatListRef = useRef<FlatList<any> | null>(null);
 
     const [resTimer, setResTimer] = useState<number>(60);

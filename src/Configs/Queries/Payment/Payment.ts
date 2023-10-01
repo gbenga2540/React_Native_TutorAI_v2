@@ -185,3 +185,46 @@ export const plan_upgrade_paypal_intent = async ({
             }
         });
 };
+
+export const update_payment_history = async ({
+    userAuth,
+    ph_id,
+}: {
+    userAuth: string;
+    ph_id: string;
+}) => {
+    const headersConfig = {
+        headers: {
+            'Content-Type': 'application/json',
+            authorization: userAuth,
+        },
+    };
+    return await api_base_url
+        .patch('payment/update-payment-history', { ph_id }, headersConfig)
+        .catch(err => {
+            return {
+                error: true,
+                data: JSON.stringify(err?.response?.data || err?.message),
+            };
+        })
+        .then((res: any) => {
+            if (res?.error) {
+                return {
+                    error: true,
+                    data: res?.data,
+                };
+            } else {
+                if (res?.data?.error) {
+                    return {
+                        error: true,
+                        data: res?.data,
+                    };
+                } else {
+                    return {
+                        error: false,
+                        data: res?.data,
+                    };
+                }
+            }
+        });
+};

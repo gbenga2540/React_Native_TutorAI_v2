@@ -75,7 +75,7 @@ const SubscriptionPlan: FunctionComponent<SubscriptionPlanProps> = ({
                     textSize={19}
                 />
                 <BasicText
-                    inputText={`1 Lesson @ $${round_up(subscription.price, 2)}`}
+                    inputText={`1 Lesson @ $${round_up(subscription.price, 3)}`}
                     textWeight={500}
                     textSize={14}
                     textColor={Colors.DarkGrey}

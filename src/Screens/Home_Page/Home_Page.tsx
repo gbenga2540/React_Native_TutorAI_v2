@@ -38,7 +38,6 @@ import BasicButton from '../../Components/Basic_Button/Basic_Button';
 import { INTF_LessonTopics } from '../../Interface/Lesson/Lesson';
 import { global_variables } from '../../Configs/Global/Global_Variable';
 import { pushShowNotification } from '../../Notifications/Notification';
-import { error_handler } from '../../Utils/Error_Handler/Error_Handler';
 import { LessonTopicsStore } from '../../MobX/Lesson_Topics/Lesson_Topics';
 
 const HomePage: FunctionComponent = observer(() => {
@@ -162,103 +161,95 @@ const HomePage: FunctionComponent = observer(() => {
     }, [UserLevel]);
 
     useEffect(() => {
-        if (UserInfo.study_target === 60 || false) {
-            if (total_homework_done() === total_homework_or_lessons()) {
-                const my_lessons = UserInfo.lessons?.filter(
-                    item => item?.id?.toString()?.[0] === get_level_number(),
-                );
+        if (total_homework_done() === total_homework_or_lessons()) {
+            const my_lessons = UserInfo.lessons?.filter(
+                item => item?.id?.toString()?.[0] === get_level_number(),
+            );
 
-                //! Add all scores into one array
-                const all_scores: number[] = [];
-                my_lessons?.map(item => {
-                    item?.score?.map(data => {
-                        all_scores.push(data);
-                    });
+            //! Add all scores into one array
+            const all_scores: number[] = [];
+            my_lessons?.map(item => {
+                item?.score?.map(data => {
+                    all_scores.push(data);
                 });
+            });
 
-                if (all_scores?.length > 0) {
-                    const average =
-                        all_scores?.reduce(
-                            (accumulator, currentVal) =>
-                                accumulator + currentVal,
-                            0,
-                        ) / all_scores?.length;
-                    //! Current Level Homework Average is greater than the minimum required for exam
-                    if (average >= global_variables.examPassMark) {
-                        if (UserInfo?.initialLevel === UserInfo?.level) {
-                            //! Basically asking if the exam has been passed at Confident Stage
-                            if (
-                                UserInfo?.level === 'Confident' &&
-                                (UserInfo?.exams?.filter(
-                                    item => item?.level === 'Confident',
-                                )?.[0]?.score || 0) >=
-                                    global_variables.examPassMark
-                            ) {
-                                setExamTShow(null);
-                            } else {
-                                setExamTShow(UserInfo?.level || null);
+            if (all_scores?.length > 0) {
+                const average =
+                    all_scores?.reduce(
+                        (accumulator, currentVal) => accumulator + currentVal,
+                        0,
+                    ) / all_scores?.length;
+                //! Current Level Homework Average is greater than the minimum required for exam
+                if (average >= global_variables.examPassMark) {
+                    if (UserInfo?.initialLevel === UserInfo?.level) {
+                        //! Basically asking if the exam has been passed at Confident Stage
+                        if (
+                            UserInfo?.level === 'Confident' &&
+                            (UserInfo?.exams?.filter(
+                                item => item?.level === 'Confident',
+                            )?.[0]?.score || 0) >= global_variables.examPassMark
+                        ) {
+                            setExamTShow(null);
+                        } else {
+                            setExamTShow(UserInfo?.level || null);
+                            pushShowNotification({
+                                title: 'Tutor AI Exam Notification',
+                                message: `${UserInfo?.level} Level Exam Ready! Please, check the Home Page to begin your Exam. Goodluck!`,
+                            });
+                        }
+                    } else {
+                        //! Basically asking if the exam has been passed at Confident Stage
+                        if (
+                            UserInfo?.level === 'Confident' &&
+                            (UserInfo?.exams?.filter(
+                                item => item?.level === 'Confident',
+                            )?.[0]?.score || 0) >= global_variables.examPassMark
+                        ) {
+                            setExamTShow(null);
+                        } else {
+                            if (UserInfo?.level === 'Beginner') {
+                                setExamTShow('Beginner');
                                 pushShowNotification({
                                     title: 'Tutor AI Exam Notification',
-                                    message: `${UserInfo?.level} Level Exam Ready! Please, check the Home Page to begin your Exam. Goodluck!`,
+                                    message:
+                                        'Beginner Level Exam Ready! Please, check the Home Page to begin your Exam. Goodluck!',
                                 });
-                            }
-                        } else {
-                            //! Basically asking if the exam has been passed at Confident Stage
-                            if (
-                                UserInfo?.level === 'Confident' &&
-                                (UserInfo?.exams?.filter(
-                                    item => item?.level === 'Confident',
-                                )?.[0]?.score || 0) >=
-                                    global_variables.examPassMark
-                            ) {
-                                setExamTShow(null);
                             } else {
-                                if (UserInfo?.level === 'Beginner') {
-                                    setExamTShow('Beginner');
+                                const return_prev_level =
+                                    (): INTF_AssignedClass => {
+                                        switch (UserInfo?.level) {
+                                            case 'Pre-Intermediate':
+                                                return 'Beginner';
+                                            case 'Intermediate':
+                                                return 'Pre-Intermediate';
+                                            case 'Upper-Intermediate':
+                                                return 'Intermediate';
+                                            case 'Confident':
+                                                return 'Upper-Intermediate';
+                                            default:
+                                                return 'Beginner';
+                                        }
+                                    };
+
+                                //! Checking previous level exam score to know if student is eligible for the next exam
+                                if (
+                                    (UserInfo?.exams?.filter(
+                                        item =>
+                                            item?.level === return_prev_level(),
+                                    )?.[0]?.score || 0) >=
+                                    global_variables.examPassMark
+                                ) {
+                                    setExamTShow(UserInfo?.level || null);
                                     pushShowNotification({
                                         title: 'Tutor AI Exam Notification',
-                                        message:
-                                            'Beginner Level Exam Ready! Please, check the Home Page to begin your Exam. Goodluck!',
+                                        message: `${UserInfo?.level} Level Exam Ready! Please, check the Home Page to begin your Exam. Goodluck!`,
                                     });
                                 } else {
-                                    const return_prev_level =
-                                        (): INTF_AssignedClass => {
-                                            switch (UserInfo?.level) {
-                                                case 'Pre-Intermediate':
-                                                    return 'Beginner';
-                                                case 'Intermediate':
-                                                    return 'Pre-Intermediate';
-                                                case 'Upper-Intermediate':
-                                                    return 'Intermediate';
-                                                case 'Confident':
-                                                    return 'Upper-Intermediate';
-                                                default:
-                                                    return 'Beginner';
-                                            }
-                                        };
-
-                                    //! Checking previous level exam score to know if student is eligible for the next exam
-                                    if (
-                                        (UserInfo?.exams?.filter(
-                                            item =>
-                                                item?.level ===
-                                                return_prev_level(),
-                                        )?.[0]?.score || 0) >=
-                                        global_variables.examPassMark
-                                    ) {
-                                        setExamTShow(UserInfo?.level || null);
-                                        pushShowNotification({
-                                            title: 'Tutor AI Exam Notification',
-                                            message: `${UserInfo?.level} Level Exam Ready! Please, check the Home Page to begin your Exam. Goodluck!`,
-                                        });
-                                    } else {
-                                        setExamTShow(null);
-                                    }
+                                    setExamTShow(null);
                                 }
                             }
                         }
-                    } else {
-                        setExamTShow(null);
                     }
                 } else {
                     setExamTShow(null);
@@ -266,6 +257,8 @@ const HomePage: FunctionComponent = observer(() => {
             } else {
                 setExamTShow(null);
             }
+        } else {
+            setExamTShow(null);
         }
     }, [total_homework_done, total_homework_or_lessons, UserInfo]);
 
@@ -288,16 +281,14 @@ const HomePage: FunctionComponent = observer(() => {
                         }}>
                         <BasicText
                             inputText={
-                                UserInfo?.study_target === 60 || false
-                                    ? examTShow !== null
-                                        ? `${examTShow} Exam`
-                                        : `${
-                                              total_homework_done() ===
-                                              total_lessons_done()
-                                                  ? 'No'
-                                                  : '1'
-                                          } Pending Homework`
-                                    : `${total_lessons_done()}/${total_homework_or_lessons()} Lessons Completed`
+                                examTShow !== null
+                                    ? `${examTShow} Exam`
+                                    : `${
+                                          total_homework_done() ===
+                                          total_lessons_done()
+                                              ? 'No'
+                                              : '1'
+                                      } Pending Homework`
                             }
                             textSize={13}
                             textFamily={fonts.OpenSans_400}
@@ -499,18 +490,9 @@ const HomePage: FunctionComponent = observer(() => {
                         <TouchableOpacity
                             onPress={no_double_clicks({
                                 execFunc: () => {
-                                    if (UserInfo.study_target === 60 || false) {
-                                        navigation.navigate('HomeTab', {
-                                            screen: 'HomeWorkPage',
-                                        });
-                                    } else {
-                                        error_handler({
-                                            navigation: navigation,
-                                            error_mssg:
-                                                'Apologies! There is no homework available for the 30-minute plan.',
-                                            header_mssg: 'Attention!',
-                                        });
-                                    }
+                                    navigation.navigate('HomeTab', {
+                                        screen: 'HomeWorkPage',
+                                    });
                                 },
                             })}
                             activeOpacity={0.55}
@@ -528,38 +510,32 @@ const HomePage: FunctionComponent = observer(() => {
                                 marginLeft={17}
                                 textSize={19}
                             />
-                            {(UserInfo.study_target === 60 || false) && (
-                                <>
-                                    <ProgressBar
-                                        marginTop={15}
-                                        progress={Math.floor(
-                                            (total_homework_done() /
-                                                total_homework_or_lessons()) *
-                                                100,
-                                        )}
-                                        height={4}
-                                        backgroundColor={Colors.White}
-                                        progressBackgroundColor={
-                                            Colors.DeepBlue
-                                        }
-                                        marginHorizontal={17}
-                                    />
-                                    <BasicText
-                                        inputText={
-                                            Math.floor(
-                                                (total_homework_done() /
-                                                    total_homework_or_lessons()) *
-                                                    100,
-                                            )?.toString() + '%'
-                                        }
-                                        textColor={Colors.Primary}
-                                        marginTop={5}
-                                        marginLeft={17}
-                                        textSize={15}
-                                        textFamily={fonts.OpenSans_700}
-                                    />
-                                </>
-                            )}
+                            <ProgressBar
+                                marginTop={15}
+                                progress={Math.floor(
+                                    (total_homework_done() /
+                                        total_homework_or_lessons()) *
+                                        100,
+                                )}
+                                height={4}
+                                backgroundColor={Colors.White}
+                                progressBackgroundColor={Colors.DeepBlue}
+                                marginHorizontal={17}
+                            />
+                            <BasicText
+                                inputText={
+                                    Math.floor(
+                                        (total_homework_done() /
+                                            total_homework_or_lessons()) *
+                                            100,
+                                    )?.toString() + '%'
+                                }
+                                textColor={Colors.Primary}
+                                marginTop={5}
+                                marginLeft={17}
+                                textSize={15}
+                                textFamily={fonts.OpenSans_700}
+                            />
                             <Image
                                 source={require('../../Images/Home/HPA_4.png')}
                                 style={{

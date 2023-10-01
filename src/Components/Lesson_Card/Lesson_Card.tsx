@@ -181,27 +181,15 @@ const LessonCard: FunctionComponent<LessonCardProps> = observer(
         );
 
         const proceed_to_lesson = ({ l_id }: { l_id: number }) => {
-            if (IS_SIXTY_MIN) {
-                navigation.navigate('HomeStack', {
-                    screen: 'LGrammarPage',
-                    params: {
-                        topic: lesson?.lesson_topic,
-                        sub_topic: lesson.lesson_sub_topic[l_id],
-                        lesson_id: l_id,
-                        is_sixty_min: IS_SIXTY_MIN,
-                    },
-                });
-            } else {
-                navigation.navigate('HomeStack', {
-                    screen: 'LConversationPage',
-                    params: {
-                        topic: lesson?.lesson_topic,
-                        sub_topic: lesson.lesson_sub_topic[l_id],
-                        lesson_id: l_id,
-                        is_sixty_min: IS_SIXTY_MIN,
-                    },
-                });
-            }
+            navigation.navigate('HomeStack', {
+                screen: 'LGrammarPage',
+                params: {
+                    topic: lesson?.lesson_topic,
+                    sub_topic: lesson.lesson_sub_topic[l_id],
+                    lesson_id: l_id,
+                    is_sixty_min: IS_SIXTY_MIN,
+                },
+            });
         };
 
         // !Total Homework Done for a specific Subject
@@ -213,27 +201,6 @@ const LessonCard: FunctionComponent<LessonCardProps> = observer(
                 return my_lessons?.[0]?.score?.length || 0;
             } else {
                 return 0;
-            }
-        };
-
-        const total_prev_lessons_done = ({
-            l_id,
-        }: {
-            l_id: number;
-        }): number => {
-            if (
-                l_id === 101 ||
-                l_id === 201 ||
-                l_id === 301 ||
-                l_id === 401 ||
-                l_id === 501
-            ) {
-                return 0;
-            } else {
-                return (
-                    UserInfo.lessons?.filter(item => item?.id === l_id - 1)?.[0]
-                        ?.lessons || 0
-                );
             }
         };
 
@@ -250,20 +217,66 @@ const LessonCard: FunctionComponent<LessonCardProps> = observer(
                 ) {
                     proceed_to_lesson({ l_id: index });
                 } else {
-                    //! Checks if user has 30 or 60mins plan
-                    if (UserInfo.study_target === 60 || false) {
-                        //! Is the number of lessons on this lessonID containing the index of th lesson chosen. if true open, but if the index of the lesson chosen is higher, then the user has to pay or subscribe to add to the lessons in his lessonID
-                        if (no_of_subs >= c_index) {
-                            proceed_to_lesson({ l_id: index });
+                    //! Is the number of lessons on this lessonID containing the index of th lesson chosen. if true open, but if the index of the lesson chosen is higher, then the user has to pay or subscribe to add to the lessons in his lessonID
+                    if (no_of_subs >= c_index) {
+                        proceed_to_lesson({ l_id: index });
+                    } else {
+                        if (
+                            lesson?.lesson_id === 101 ||
+                            lesson?.lesson_id === 201 ||
+                            lesson?.lesson_id === 301 ||
+                            lesson?.lesson_id === 401 ||
+                            lesson?.lesson_id === 501
+                        ) {
+                            if (Math.abs(no_of_subs - c_index) > 1) {
+                                error_handler({
+                                    navigation: navigation,
+                                    error_mssg:
+                                        'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one and completed the homework.',
+                                    header_mssg: 'Attention!',
+                                });
+                            } else {
+                                if (total_homework_done() === index) {
+                                    activate_lesson_mutate({
+                                        userId: UserInfoStore?.user_info
+                                            ?._id as string,
+                                        lessonId: lesson?.lesson_id as number,
+                                        lessonNum: c_index,
+                                    });
+                                } else {
+                                    error_handler({
+                                        navigation: navigation,
+                                        error_mssg:
+                                            'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one and completed the homework.',
+                                        header_mssg: 'Attention!',
+                                    });
+                                }
+                            }
                         } else {
+                            //! Checking the number of assignment scores with the no of lessons in the previous subjects
                             if (
-                                lesson?.lesson_id === 101 ||
-                                lesson?.lesson_id === 201 ||
-                                lesson?.lesson_id === 301 ||
-                                lesson?.lesson_id === 401 ||
-                                lesson?.lesson_id === 501
+                                (UserLessonScore?.filter(
+                                    item => item?.id === lesson.lesson_id - 1,
+                                )?.[0]?.score?.length || 0) !==
+                                get_prev_total_lessons({
+                                    l_id: lesson.lesson_id,
+                                })
                             ) {
-                                if (Math.abs(no_of_subs - c_index) > 1) {
+                                error_handler({
+                                    navigation: navigation,
+                                    error_mssg:
+                                        'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one and completed the homework.',
+                                    header_mssg: 'Attention!',
+                                });
+                            } else {
+                                if (c_index === 1) {
+                                    activate_lesson_mutate({
+                                        userId: UserInfoStore?.user_info
+                                            ?._id as string,
+                                        lessonId: lesson?.lesson_id as number,
+                                        lessonNum: c_index,
+                                    });
+                                } else if (Math.abs(no_of_subs - c_index) > 1) {
                                     error_handler({
                                         navigation: navigation,
                                         error_mssg:
@@ -287,133 +300,6 @@ const LessonCard: FunctionComponent<LessonCardProps> = observer(
                                             header_mssg: 'Attention!',
                                         });
                                     }
-                                }
-                            } else {
-                                //! Checking the number of assignment scores with the no of lessons in the previous subjects
-                                if (
-                                    (UserLessonScore?.filter(
-                                        item =>
-                                            item?.id === lesson.lesson_id - 1,
-                                    )?.[0]?.score?.length || 0) !==
-                                    get_prev_total_lessons({
-                                        l_id: lesson.lesson_id,
-                                    })
-                                ) {
-                                    error_handler({
-                                        navigation: navigation,
-                                        error_mssg:
-                                            'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one and completed the homework.',
-                                        header_mssg: 'Attention!',
-                                    });
-                                } else {
-                                    if (c_index === 1) {
-                                        activate_lesson_mutate({
-                                            userId: UserInfoStore?.user_info
-                                                ?._id as string,
-                                            lessonId:
-                                                lesson?.lesson_id as number,
-                                            lessonNum: c_index,
-                                        });
-                                    } else if (
-                                        Math.abs(no_of_subs - c_index) > 1
-                                    ) {
-                                        error_handler({
-                                            navigation: navigation,
-                                            error_mssg:
-                                                'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one and completed the homework.',
-                                            header_mssg: 'Attention!',
-                                        });
-                                    } else {
-                                        if (total_homework_done() === index) {
-                                            activate_lesson_mutate({
-                                                userId: UserInfoStore?.user_info
-                                                    ?._id as string,
-                                                lessonId:
-                                                    lesson?.lesson_id as number,
-                                                lessonNum: c_index,
-                                            });
-                                        } else {
-                                            error_handler({
-                                                navigation: navigation,
-                                                error_mssg:
-                                                    'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one and completed the homework.',
-                                                header_mssg: 'Attention!',
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        //! Is the number of lessons on this lessonID containing the index of th lesson chosen. if true open, but if the index of the lesson chosen is higher, then the user has to pay or subscribe to add to the lessons in his lessonID
-                        if (no_of_subs >= c_index) {
-                            proceed_to_lesson({ l_id: index });
-                        } else {
-                            if (
-                                lesson?.lesson_id === 101 ||
-                                lesson?.lesson_id === 201 ||
-                                lesson?.lesson_id === 301 ||
-                                lesson?.lesson_id === 401 ||
-                                lesson?.lesson_id === 501
-                            ) {
-                                if (Math.abs(no_of_subs - c_index) > 1) {
-                                    error_handler({
-                                        navigation: navigation,
-                                        error_mssg:
-                                            'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one.',
-                                        header_mssg: 'Attention!',
-                                    });
-                                } else {
-                                    activate_lesson_mutate({
-                                        userId: UserInfoStore?.user_info
-                                            ?._id as string,
-                                        lessonId: lesson?.lesson_id as number,
-                                        lessonNum: c_index,
-                                    });
-                                }
-                            } else {
-                                //! Has the user completed the lessons in the previous subject
-                                if (
-                                    get_prev_total_lessons({
-                                        l_id: lesson.lesson_id,
-                                    }) ===
-                                    total_prev_lessons_done({
-                                        l_id: lesson.lesson_id,
-                                    })
-                                ) {
-                                    if (c_index === 1) {
-                                        activate_lesson_mutate({
-                                            userId: UserInfoStore?.user_info
-                                                ?._id as string,
-                                            lessonId:
-                                                lesson?.lesson_id as number,
-                                            lessonNum: c_index,
-                                        });
-                                    } else if (
-                                        Math.abs(no_of_subs - c_index) > 1
-                                    ) {
-                                        error_handler({
-                                            navigation: navigation,
-                                            error_mssg:
-                                                'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one.',
-                                            header_mssg: 'Attention!',
-                                        });
-                                    } else {
-                                        activate_lesson_mutate({
-                                            userId: UserInfoStore?.user_info
-                                                ?._id as string,
-                                            lessonId:
-                                                lesson?.lesson_id as number,
-                                            lessonNum: c_index,
-                                        });
-                                    }
-                                } else {
-                                    error_handler({
-                                        navigation: navigation,
-                                        error_mssg:
-                                            'Sorry, you are not allowed to proceed to the subsequent lessons until you have studied the previous one.',
-                                        header_mssg: 'Attention!',
-                                    });
                                 }
                             }
                         }

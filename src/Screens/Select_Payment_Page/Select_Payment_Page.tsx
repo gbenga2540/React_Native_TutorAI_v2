@@ -26,6 +26,7 @@ import { useMutation } from 'react-query';
 import {
     paypal_intent,
     stripe_intent,
+    update_payment_history,
 } from '../../Configs/Queries/Payment/Payment';
 import OverlaySpinner from '../../Components/Overlay_Spinner/Overlay_Spinner';
 import { UserInfoStore } from '../../MobX/User_Info/User_Info';
@@ -51,6 +52,7 @@ const SelectPaymentPage: FunctionComponent = () => {
     const [subPM, setSubPM] = useState<number>(1);
     const [showSpinner, setShowSpinner] = useState<boolean>(false);
     const [disableButton, setDisableButton] = useState<boolean>(false);
+    const [pHistoryID, setPHistoryID] = useState<string>('');
 
     const pricing =
         (route.params?.allPlans as {
@@ -117,7 +119,8 @@ const SelectPaymentPage: FunctionComponent = () => {
                     svr_error_mssg: data?.data,
                 });
             } else {
-                const client_secret: string = data?.data;
+                const client_secret: string = data?.data?.cl_secret;
+                setPHistoryID(data?.data?.p_history?._id);
 
                 const initResponse = await initPaymentSheet({
                     merchantDisplayName: 'Tutor AI, Inc.',
@@ -153,25 +156,33 @@ const SelectPaymentPage: FunctionComponent = () => {
     });
 
     const handle_final_payments = () => {
-        navigation.push(
-            'HomeStack' as never,
-            {
-                screen: 'CongratulationsPage',
-                params: {
-                    header_txt: 'Payment Successful!',
-                    message_txt: `You have successfully paid for ${
-                        sub_data.filter(
+        if (pHistoryID) {
+            update_payment_history_mutate({
+                userAuth: UserInfoStore?.user_info?.accessToken as string,
+                ph_id: pHistoryID,
+            });
+        } else {
+            navigation.push(
+                'HomeStack' as never,
+                {
+                    screen: 'CongratulationsPage',
+                    params: {
+                        header_txt: 'Payment Successful!',
+                        message_txt: `You have successfully paid for ${
+                            sub_data.filter(
+                                item =>
+                                    item?.plan === route.params?.paymentPlan,
+                            )?.[0]?.no_of_lessons
+                        } Lessons!`,
+                        nextPage: 5,
+                        noOfLessons: sub_data.filter(
                             item => item?.plan === route.params?.paymentPlan,
-                        )?.[0]?.no_of_lessons
-                    } Lessons!`,
-                    nextPage: 5,
-                    noOfLessons: sub_data.filter(
-                        item => item?.plan === route.params?.paymentPlan,
-                    )?.[0]?.no_of_lessons,
-                    hide_back_btn: true,
-                },
-            } as never,
-        );
+                        )?.[0]?.no_of_lessons,
+                        hide_back_btn: true,
+                    },
+                } as never,
+            );
+        }
     };
 
     const { mutate: paypal_intent_mutate } = useMutation(paypal_intent, {
@@ -189,11 +200,57 @@ const SelectPaymentPage: FunctionComponent = () => {
                     svr_error_mssg: data?.data,
                 });
             } else {
-                setPaypalLink(data?.data);
+                setPaypalLink(data?.data?.cl_secret);
+                setPHistoryID(data?.data?.p_history?._id);
                 setShowModal(true);
             }
         },
     });
+
+    const { mutate: update_payment_history_mutate } = useMutation(
+        update_payment_history,
+        {
+            onMutate: () => {
+                setDisableButton(true);
+                setShowSpinner(true);
+            },
+            onSettled: async data => {
+                setShowSpinner(false);
+                setDisableButton(false);
+                if (data?.error) {
+                    error_handler({
+                        navigation: navigation,
+                        error_mssg: 'Something went wrong!',
+                        svr_error_mssg: data?.data,
+                    });
+                } else {
+                    navigation.push(
+                        'HomeStack' as never,
+                        {
+                            screen: 'CongratulationsPage',
+                            params: {
+                                header_txt: 'Payment Successful!',
+                                message_txt: `You have successfully paid for ${
+                                    sub_data.filter(
+                                        item =>
+                                            item?.plan ===
+                                            route.params?.paymentPlan,
+                                    )?.[0]?.no_of_lessons
+                                } Lessons!`,
+                                nextPage: 5,
+                                noOfLessons: sub_data.filter(
+                                    item =>
+                                        item?.plan ===
+                                        route.params?.paymentPlan,
+                                )?.[0]?.no_of_lessons,
+                                hide_back_btn: true,
+                            },
+                        } as never,
+                    );
+                }
+            },
+        },
+    );
 
     const pay_with_paypal = () => {
         if (paymentPlan) {
@@ -396,8 +453,9 @@ const SelectPaymentPage: FunctionComponent = () => {
                                 />
                             )}
                         </View>
-                        {(AdminStore.admin_data?.enable_flutterwave ||
-                            false) && (
+                        {/* {(AdminStore.admin_data?.enable_flutterwave ||
+                            false) && ( */}
+                        {false && (
                             <Fragment>
                                 <BasicText
                                     inputText="or"

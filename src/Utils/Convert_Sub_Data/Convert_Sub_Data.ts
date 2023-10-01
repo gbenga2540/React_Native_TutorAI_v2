@@ -12,7 +12,7 @@ export const convert_sub_data = ({
     }[];
 }) => {
     if (data?.length > 0) {
-        const subscription_data = data.map(item => ({
+        const subscription_data = data?.map(item => ({
             id: item.id,
             no_of_lessons: item.no_of_lessons,
             price: item.price,

@@ -18,7 +18,6 @@ import { observer } from 'mobx-react';
 import { TextToSpeechStore } from '../../MobX/Text_To_Speech/Text_To_Speech';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { UserInfoStore } from '../../MobX/User_Info/User_Info';
 
 type HomeTabParamList = {
     HomePage: {};
@@ -80,22 +79,16 @@ const HomeTab: FunctionComponent = observer(() => {
                     unmountOnBlur: true,
                 }}
             />
-            {(UserInfoStore.user_info.study_target === 60 || false) && (
-                <Home_Tab.Screen
-                    name="HomeWorkPage"
-                    component={HomeWorkPage}
-                    options={{
-                        tabBarIcon: ({ color }) => (
-                            <HomeWorkIcon
-                                width={26}
-                                height={26}
-                                color={color}
-                            />
-                        ),
-                        tabBarLabel: 'HomeWork',
-                    }}
-                />
-            )}
+            <Home_Tab.Screen
+                name="HomeWorkPage"
+                component={HomeWorkPage}
+                options={{
+                    tabBarIcon: ({ color }) => (
+                        <HomeWorkIcon width={26} height={26} color={color} />
+                    ),
+                    tabBarLabel: 'HomeWork',
+                }}
+            />
             {/* <Home_Tab.Screen
                 name="ConversationPage"
                 component={ConversationPage}
