@@ -1,0 +1,40 @@
+export const topics_interests = [
+    'Animals',
+    'Archaeology',
+    'Art',
+    'Astrology',
+    'Beauty',
+    'Books',
+    'Business',
+    'Cars',
+    'Comedy',
+    'Cooking',
+    'Crafts',
+    'Dancing',
+    'Education',
+    'Fashion',
+    'Film',
+    'Finance',
+    'Fitness',
+    'Food',
+    'Health',
+    'History',
+    'Languages',
+    'Music',
+    'Nature',
+    'Politics',
+    'Psychology',
+    'Science',
+    'Self-improvement',
+    'Sports',
+    'Technology',
+    'Travel',
+    'Video production',
+    'Writing',
+    'Yoga',
+];
+
+export const get_random_interest = () => {
+    const randomIndex = Math.floor(Math.random() * topics_interests.length);
+    return topics_interests[randomIndex];
+};
