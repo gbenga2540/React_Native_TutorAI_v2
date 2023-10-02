@@ -385,23 +385,25 @@ const LessonCard: FunctionComponent<LessonCardProps> = observer(
                                 paddingBottom: 12,
                             }}>
                             <BasicText
-                                inputText={`Subject ${lesson?.lesson_index} ${
+                                inputText={
                                     isArchives
-                                        ? lesson?.lesson_id?.toString()?.[0] ===
-                                          '1'
-                                            ? ' - Beginner'
-                                            : lesson?.lesson_id?.toString()?.[0] ===
-                                              '2'
-                                            ? ' - Pre-Intermediate'
-                                            : lesson?.lesson_id?.toString()?.[0] ===
-                                              '3'
-                                            ? ' - Intermediate'
-                                            : lesson?.lesson_id?.toString()?.[0] ===
-                                              '4'
-                                            ? ' - Upper-Intermediate'
-                                            : ' - Confident'
-                                        : ''
-                                }`}
+                                        ? `Subject ${lesson?.lesson_index} ${
+                                              lesson?.lesson_id?.toString()?.[0] ===
+                                              '1'
+                                                  ? ' - Beginner'
+                                                  : lesson?.lesson_id?.toString()?.[0] ===
+                                                    '2'
+                                                  ? ' - Pre-Intermediate'
+                                                  : lesson?.lesson_id?.toString()?.[0] ===
+                                                    '3'
+                                                  ? ' - Intermediate'
+                                                  : lesson?.lesson_id?.toString()?.[0] ===
+                                                    '4'
+                                                  ? ' - Upper-Intermediate'
+                                                  : ' - Confident'
+                                          }`
+                                        : `Subject ${current_index + 1}`
+                                }
                                 textWeight={500}
                                 textSize={15}
                                 textColor={
