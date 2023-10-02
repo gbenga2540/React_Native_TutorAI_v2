@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 import {
     ScrollView,
     StyleSheet,
@@ -29,21 +34,24 @@ import { AvatarVoiceStore } from '../../MobX/Avatar_Voice/Avatar_Voice';
 import { SpeechControllerStore } from '../../MobX/Speech_Controller/Speech_Controller';
 import { VocabularyInfoStore } from '../../MobX/Vocabulary_Info/Vocabulary_Info';
 import { INTF_Glossary } from '../../Interface/Glossary/Glossary';
-// import OverlaySpinner from '../../Components/Overlay_Spinner/Overlay_Spinner';
-// import { useMutation } from 'react-query';
-// import { gpt_request } from '../../Configs/Queries/Chat/Chat';
-// import { error_handler } from '../../Utils/Error_Handler/Error_Handler';
-// import { UserInfoStore } from '../../MobX/User_Info/User_Info';
-// import SInfo from 'react-native-sensitive-info';
-// import { SECURE_STORAGE_GLOSSARY, SECURE_STORAGE_NAME } from '@env';
-// import { getGoogleTranslate } from '../../Hooks/Get_Google_Translate/Get_Google_Translate';
+import OverlaySpinner from '../../Components/Overlay_Spinner/Overlay_Spinner';
+import { useMutation } from 'react-query';
+import { gpt_request } from '../../Configs/Queries/Chat/Chat';
+import { error_handler } from '../../Utils/Error_Handler/Error_Handler';
+import { UserInfoStore } from '../../MobX/User_Info/User_Info';
+import SInfo from 'react-native-sensitive-info';
+import { SECURE_STORAGE_GLOSSARY, SECURE_STORAGE_NAME } from '@env';
+import { getGoogleTranslate } from '../../Hooks/Get_Google_Translate/Get_Google_Translate';
+import BasicButton from '../../Components/Basic_Button/Basic_Button';
 
 const VocabularyPage: FunctionComponent = () => {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
     const [showTranslated, setShowTranslated] = useState<boolean>(false);
-    // const [showSpinner, setShowSpinner] = useState<boolean>(false);
+    const [showSpinner, setShowSpinner] = useState<boolean>(false);
     const [vocIndex, setVocIndex] = useState<number>(0);
-    const vocabulary: INTF_Glossary[] = VocabularyInfoStore?.vocabularies || [];
+    // const vocabulary: INTF_Glossary[] = VocabularyInfoStore?.vocabularies || [];
+    const saved_vocabulary: INTF_Glossary[] =
+        VocabularyInfoStore?.vocabularies || [];
 
     const prev_vocabulary = no_double_clicks({
         execFunc: () => {
@@ -91,189 +99,195 @@ const VocabularyPage: FunctionComponent = () => {
         },
     });
 
-    // const [disableButton, setDisableButton] = useState<boolean>(false);
-    // const [vocabulary, setVocabulary] = useState<INTF_Glossary[]>([]);
+    const [disableButton, setDisableButton] = useState<boolean>(false);
+    const [vocabulary, setVocabulary] = useState<INTF_Glossary[]>([]);
 
-    // const GPT_PROMPT = `Act as a Dictionary such as an Oxford Dictionary:\nTo generate a list of 5 words with definitions and translations, please use the following format for each word:\n\n%w0% [Word in English] %w0%\n%m0% [Meaning of the word in English] %m0%\n%e0% [Example of the Usage of the Word in English] %e0%\n%t0% [Translation of the word in ${UserInfoStore?.user_info?.language}] %t0%\n\n...\n\n%w4% [Word in English] %w4%\n%m4% [Meaning of the word in English] %m4%\n%e4% [Example of the Usage of the Word in English] %e4%\n%t4% [Translation of the word in ${UserInfoStore?.user_info?.language}] %t4%\nPlease ensure that you replace the placeholders [Word in English], [Meaning of the word in English], [Example of the Usage of the Word in English], and [Translation of the word in ${UserInfoStore?.user_info?.language}] with the actual word, its meaning, and its translation, respectively. Also, make sure that the IDs %w0%, %m0%, %e0%, %t0%, %w1%, %m1%, %e1%, %t1%, etc. are correctly incremented for each word.`;
+    const GPT_PROMPT = `Act as a Dictionary such as an Oxford Dictionary:\nTo generate a list of 5 words with definitions and translations, please use the following format for each word:\n\n%w0% [Word in English] %w0%\n%m0% [Meaning of the word in English] %m0%\n%e0% [Example of the Usage of the Word in English] %e0%\n%t0% [Translation of the word in ${UserInfoStore?.user_info?.language}] %t0%\n\n...\n\n%w4% [Word in English] %w4%\n%m4% [Meaning of the word in English] %m4%\n%e4% [Example of the Usage of the Word in English] %e4%\n%t4% [Translation of the word in ${UserInfoStore?.user_info?.language}] %t4%\nPlease ensure that you replace the placeholders [Word in English], [Meaning of the word in English], [Example of the Usage of the Word in English], and [Translation of the word in ${UserInfoStore?.user_info?.language}] with the actual word, its meaning, and its translation, respectively. Also, make sure that the IDs %w0%, %m0%, %e0%, %t0%, %w1%, %m1%, %e1%, %t1%, etc. are correctly incremented for each word.`;
 
-    // const text_to_array_1 = ({
-    //     text_data,
-    // }: {
-    //     text_data: string;
-    // }): INTF_Glossary[] => {
-    //     const regex =
-    //         /^%w\d+% [^\n]+ %w\d+%[\r\n]+%m\d+% [^\n]+ %m\d+%[\r\n]+%e\d+% [^\n]+ %e\d+%[\r\n]+%t\d+% [^\n]+ %t\d+%$/gm;
+    const text_to_array_1 = ({
+        text_data,
+    }: {
+        text_data: string;
+    }): INTF_Glossary[] => {
+        const regex =
+            /^%w\d+% [^\n]+ %w\d+%[\r\n]+%m\d+% [^\n]+ %m\d+%[\r\n]+%e\d+% [^\n]+ %e\d+%[\r\n]+%t\d+% [^\n]+ %t\d+%$/gm;
 
-    //     if (regex.test(text_data)) {
-    //         const lines = text_data.trim().split('\n');
-    //         const result = [];
+        if (regex.test(text_data)) {
+            const lines = text_data.trim().split('\n');
+            const result = [];
 
-    //         for (let i = 0; i < lines.length; i += 5) {
-    //             const word = lines[i].replace(/%w\d+%/g, '').trim();
-    //             const meaning = lines[i + 1].replace(/%m\d+%/g, '').trim();
-    //             const example = lines[i + 2].replace(/%e\d+%/g, '').trim();
-    //             const translation = lines[i + 3].replace(/%t\d+%/g, '').trim();
-    //             const entry = {
-    //                 word,
-    //                 meaning,
-    //                 example,
-    //                 translation,
-    //             };
-    //             result.push(entry);
-    //         }
-    //         return result || [];
-    //     } else {
-    //         return text_to_array_2({ text_data: text_data });
-    //     }
-    // };
+            for (let i = 0; i < lines.length; i += 5) {
+                const word = lines[i].replace(/%w\d+%/g, '').trim();
+                const meaning = lines[i + 1].replace(/%m\d+%/g, '').trim();
+                const example = lines[i + 2].replace(/%e\d+%/g, '').trim();
+                const translation = lines[i + 3].replace(/%t\d+%/g, '').trim();
+                const entry = {
+                    word,
+                    meaning,
+                    example,
+                    translation,
+                };
+                result.push(entry);
+            }
+            return result || [];
+        } else {
+            return [];
+        }
+    };
 
-    // const update_glossary = ({
-    //     glossary,
-    //     all_glossary,
-    // }: {
-    //     glossary: INTF_Glossary[];
-    //     all_glossary: INTF_Glossary[];
-    // }): INTF_Glossary[] => {
-    //     const updated_glossary: INTF_Glossary[] = [...all_glossary];
+    const update_glossary = ({
+        glossary,
+        all_glossary,
+    }: {
+        glossary: INTF_Glossary[];
+        all_glossary: INTF_Glossary[];
+    }): INTF_Glossary[] => {
+        const updated_glossary: INTF_Glossary[] = [...all_glossary];
 
-    //     for (const obj of glossary) {
-    //         const index = all_glossary.findIndex(
-    //             item => item.word?.toLowerCase() === obj.word?.toLowerCase(),
-    //         );
-    //         if (index !== -1) {
-    //             updated_glossary[index] = obj;
-    //         } else {
-    //             updated_glossary.push(obj);
-    //         }
-    //     }
-    //     return updated_glossary;
-    // };
+        for (const obj of glossary) {
+            const index = all_glossary.findIndex(
+                item => item.word?.toLowerCase() === obj.word?.toLowerCase(),
+            );
+            if (index !== -1) {
+                updated_glossary[index] = obj;
+            } else {
+                updated_glossary.push(obj);
+            }
+        }
+        return updated_glossary;
+    };
 
-    // const save_glossary_data = async ({
-    //     s_g_data,
-    // }: {
-    //     s_g_data: INTF_Glossary[];
-    // }) => {
-    //     try {
-    //         await SInfo.setItem(
-    //             SECURE_STORAGE_GLOSSARY,
-    //             JSON.stringify([...s_g_data]),
-    //             {
-    //                 sharedPreferencesName: SECURE_STORAGE_NAME,
-    //                 keychainService: SECURE_STORAGE_NAME,
-    //             },
-    //         );
-    //     } catch (error) {}
-    // };
+    const save_glossary_data = async ({
+        s_g_data,
+    }: {
+        s_g_data: INTF_Glossary[];
+    }) => {
+        try {
+            await SInfo.setItem(
+                SECURE_STORAGE_GLOSSARY,
+                JSON.stringify([...s_g_data]),
+                {
+                    sharedPreferencesName: SECURE_STORAGE_NAME,
+                    keychainService: SECURE_STORAGE_NAME,
+                },
+            );
+        } catch (error) {}
+    };
 
-    // const save_glossary = async ({ data }: { data: INTF_Glossary[] }) => {
-    //     try {
-    //         await SInfo.getItem(SECURE_STORAGE_GLOSSARY, {
-    //             sharedPreferencesName: SECURE_STORAGE_NAME,
-    //             keychainService: SECURE_STORAGE_NAME,
-    //         })
-    //             .catch(() => {
-    //                 save_glossary_data({ s_g_data: [...data] });
-    //             })
-    //             .then(async res => {
-    //                 if (res) {
-    //                     const json_res: INTF_Glossary[] = JSON.parse(res);
-    //                     if (json_res?.length > 0) {
-    //                         const new_glossary = update_glossary({
-    //                             glossary: data,
-    //                             all_glossary: json_res,
-    //                         });
-    //                         save_glossary_data({ s_g_data: [...new_glossary] });
-    //                     } else {
-    //                         save_glossary_data({ s_g_data: [...data] });
-    //                     }
-    //                 } else {
-    //                     save_glossary_data({ s_g_data: [...data] });
-    //                 }
-    //             });
-    //     } catch (error) {
-    //         save_glossary_data({ s_g_data: [...data] });
-    //     }
-    // };
+    const save_glossary = async ({ data }: { data: INTF_Glossary[] }) => {
+        try {
+            await SInfo.getItem(SECURE_STORAGE_GLOSSARY, {
+                sharedPreferencesName: SECURE_STORAGE_NAME,
+                keychainService: SECURE_STORAGE_NAME,
+            })
+                .catch(() => {
+                    save_glossary_data({ s_g_data: [...data] });
+                })
+                .then(async res => {
+                    if (res) {
+                        const json_res: INTF_Glossary[] = JSON.parse(res);
+                        if (json_res?.length > 0) {
+                            const new_glossary = update_glossary({
+                                glossary: data,
+                                all_glossary: json_res,
+                            });
+                            save_glossary_data({ s_g_data: [...new_glossary] });
+                        } else {
+                            save_glossary_data({ s_g_data: [...data] });
+                        }
+                    } else {
+                        save_glossary_data({ s_g_data: [...data] });
+                    }
+                });
+        } catch (error) {
+            save_glossary_data({ s_g_data: [...data] });
+        }
+    };
 
-    // const { mutate: gpt_req_mutate } = useMutation(gpt_request, {
-    //     onMutate: () => {
-    //         setShowSpinner(true);
-    //     },
-    //     onSettled: async data => {
-    //         if (data?.error) {
-    //             setShowSpinner(false);
-    //             error_handler({
-    //                 navigation: navigation,
-    //                 error_mssg:
-    //                     'An error occured while trying generate Vocabulary Data!',
-    //             });
-    //         } else {
-    //             setShowSpinner(false);
-    //             const gpt_res: string = data?.data?.chat_res;
+    const { mutate: gpt_req_mutate } = useMutation(gpt_request, {
+        onMutate: () => {
+            setShowSpinner(true);
+            setDisableButton(true);
+        },
+        onSettled: async data => {
+            if (data?.error) {
+                setShowSpinner(false);
+                setDisableButton(false);
+                error_handler({
+                    navigation: navigation,
+                    error_mssg:
+                        'An error occured while trying generate Vocabulary Data!',
+                });
+            } else {
+                setShowSpinner(false);
+                setDisableButton(false);
+                const gpt_res: string = data?.data?.chat_res;
 
-    //             try {
-    //                 const converted_data =
-    //                     text_to_array_1({ text_data: gpt_res }) || [];
-    //                 if (converted_data?.length > 0) {
-    //                     // !Get the words to Translate.
-    //                     const words: string[] = converted_data?.map(
-    //                         item => item?.word,
-    //                     ) as string[];
+                try {
+                    const converted_data =
+                        text_to_array_1({ text_data: gpt_res }) || [];
+                    if (converted_data?.length > 0) {
+                        // !Get the words to Translate.
+                        const words: string[] = converted_data?.map(
+                            item => item?.word,
+                        ) as string[];
 
-    //                     const gTranslate = await getGoogleTranslate({
-    //                         words: words,
-    //                         target_lang:
-    //                             (
-    //                                 UserInfoStore?.user_info?.language as string
-    //                             )?.split(' - ')?.[1] || '',
-    //                     });
+                        const gTranslate = await getGoogleTranslate({
+                            words: words,
+                            target_lang:
+                                (
+                                    UserInfoStore?.user_info?.language as string
+                                )?.split(' - ')?.[1] || '',
+                        });
 
-    //                     if (gTranslate?.length === words?.length) {
-    //                         const new_data = converted_data.map(
-    //                             (item, index) => {
-    //                                 return {
-    //                                     ...item,
-    //                                     translation: gTranslate[index],
-    //                                 };
-    //                             },
-    //                         );
-    //                         setVocabulary(new_data);
-    //                         save_glossary({ data: new_data });
-    //                     } else {
-    //                         setVocabulary(converted_data);
-    //                         save_glossary({ data: converted_data });
-    //                     }
-    //                 }
-    //                 setVocIndex(0);
-    //             } catch (err) {}
-    //         }
-    //     },
-    // });
+                        if (gTranslate?.length === words?.length) {
+                            const new_data = converted_data.map(
+                                (item, index) => {
+                                    return {
+                                        ...item,
+                                        translation: gTranslate[index],
+                                    };
+                                },
+                            );
+                            setVocabulary([...saved_vocabulary, ...new_data]);
+                            save_glossary({ data: new_data });
+                        } else {
+                            setVocabulary([
+                                ...saved_vocabulary,
+                                ...converted_data,
+                            ]);
+                            save_glossary({ data: converted_data });
+                        }
+                    }
+                    setVocIndex(0);
+                } catch (err) {}
+            }
+        },
+    });
 
-    // const regenerate_voc = no_double_clicks({
-    //     execFunc: () => {
-    //         gpt_req_mutate({
-    //             messages: [
-    //                 {
-    //                     role: 'user',
-    //                     content: GPT_PROMPT,
-    //                 },
-    //             ],
-    //         });
-    //     },
-    // });
+    const regenerate_voc = no_double_clicks({
+        execFunc: () => {
+            gpt_req_mutate({
+                messages: [
+                    {
+                        role: 'user',
+                        content: GPT_PROMPT,
+                    },
+                ],
+            });
+        },
+    });
 
-    // useEffect(() => {
-    //     gpt_req_mutate({
-    //         messages: [
-    //             {
-    //                 role: 'user',
-    //                 content: GPT_PROMPT,
-    //             },
-    //         ],
-    //     });
-    // }, [gpt_req_mutate, GPT_PROMPT]);
+    useEffect(() => {
+        gpt_req_mutate({
+            messages: [
+                {
+                    role: 'user',
+                    content: GPT_PROMPT,
+                },
+            ],
+        });
+    }, [gpt_req_mutate, GPT_PROMPT]);
 
     useFocusEffect(
         useCallback(() => {
@@ -298,10 +312,10 @@ const VocabularyPage: FunctionComponent = () => {
     return (
         <View style={styles.report_main}>
             <CustomStatusBar backgroundColor={Colors.Background} />
-            {/* <OverlaySpinner
+            <OverlaySpinner
                 showSpinner={showSpinner}
                 setShowSpinner={setShowSpinner}
-            /> */}
+            />
             <View
                 style={{
                     marginTop:
@@ -544,9 +558,7 @@ const VocabularyPage: FunctionComponent = () => {
                             alignItems: 'center',
                         }}>
                         <BasicText
-                            inputText={
-                                'New Lesson Started.\nNo Vocabularies Found!'
-                            }
+                            inputText={'No Vocabularies Found!'}
                             marginTop={200}
                             textWeight={600}
                             textAlign="center"
@@ -555,7 +567,7 @@ const VocabularyPage: FunctionComponent = () => {
                 )}
                 <View style={{ marginBottom: 50 }}>{''}</View>
             </ScrollView>
-            {/* <BasicButton
+            <BasicButton
                 execFunc={() => regenerate_voc({})}
                 buttonText="Re-Generate"
                 borderRadius={8}
@@ -571,7 +583,7 @@ const VocabularyPage: FunctionComponent = () => {
                           })
                         : 20
                 }
-            /> */}
+            />
         </View>
     );
 };

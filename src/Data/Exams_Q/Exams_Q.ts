@@ -684,7 +684,7 @@ const Intermediate: INTF_ExamsQ[] = [
         question:
             'Which verb can be followed by both the infinitive and gerund forms?',
         options: ['Enjoy', 'Mind', 'Finish', 'Suggest'],
-        answer: 'Stop',
+        answer: 'Enjoy',
     },
     {
         exam_id: 22,

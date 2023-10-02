@@ -1,8 +1,8 @@
 export const global_variables = {
     debounceTime: 1000,
     passMark: 80,
-    writingPassMark: 70,
-    examWPassmark: 70,
+    writingPassMark: 60,
+    examWPassmark: 60,
     examPassMark: 80,
     GrammarTime: 1860,
     ReadingTime: 660,

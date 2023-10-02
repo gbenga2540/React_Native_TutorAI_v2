@@ -345,7 +345,7 @@ const HomePage: FunctionComponent = observer(() => {
                     }}>
                     <View
                         style={{
-                            marginLeft: 25,
+                            marginLeft: 17,
                             marginTop: 30,
                             zIndex: 1,
                         }}>
@@ -365,7 +365,7 @@ const HomePage: FunctionComponent = observer(() => {
                                 alignItems: 'center',
                                 borderRadius: 11,
                                 flexDirection: 'row',
-                                paddingLeft: 10,
+                                paddingLeft: 8,
                                 paddingRight: 4,
                             }}>
                             <BasicText
